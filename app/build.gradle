@@ -37,4 +37,10 @@ dependencies {
     //gson libray
     implementation 'com.google.code.gson:gson:2.8.6'
 
+    //    realtime databade
+    implementation 'com.google.firebase:firebase-database:19.2.1'
+
 }
+apply plugin: 'com.android.application'
+apply plugin: 'com.google.gms.google-services'
+

@@ -9,7 +9,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 import android.widget.Toolbar;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +25,9 @@ import java.util.List;
 public class CategoriesActivity extends AppCompatActivity {
     private androidx.appcompat.widget.Toolbar toolbarx;
     RecyclerView recyclerView;
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,6 +54,18 @@ public class CategoriesActivity extends AppCompatActivity {
         categoryModelList.add(new CategoryModel("","sifat"));
         CategoryAdapter adapter=new CategoryAdapter(categoryModelList);
         recyclerView.setAdapter(adapter);
+
+        myRef.child("categories").child("category1").child("name").addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Toast.makeText(CategoriesActivity.this,dataSnapshot.getValue().toString(),Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
 
 
     }
