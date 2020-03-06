@@ -1,6 +1,7 @@
 package com.example.quizzerx;
 
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +32,7 @@ public class GridAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, ViewGroup parent) {
+    public View getView(int position, View convertView, final ViewGroup parent) {
 
         View view;
         if (convertView==null)
@@ -41,6 +42,13 @@ public class GridAdapter extends BaseAdapter {
         {
             view=convertView;
         }
+        view.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent qusIntent=new Intent(parent.getContext(),QuestionsActivity.class);
+                parent.getContext().startActivity(qusIntent);
+            }
+        });
         ((TextView)view.findViewById(R.id.setTextId)).setText(String.valueOf(position+1));
         return view;
     }

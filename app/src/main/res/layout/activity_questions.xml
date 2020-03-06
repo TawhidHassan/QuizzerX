@@ -81,6 +81,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/rounded_border"
             android:backgroundTint="#9E9C9C"
+            android:textColor="@android:color/black"
             android:text="Button" />
 
         <Button
@@ -90,6 +91,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/rounded_border"
             android:backgroundTint="#9E9C9C"
+            android:textColor="@android:color/black"
             android:text="Button" />
 
         <Button
@@ -99,6 +101,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/rounded_border"
             android:backgroundTint="#9E9C9C"
+            android:textColor="@android:color/black"
             android:text="Button" />
 
         <Button
@@ -108,6 +111,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/rounded_border"
             android:backgroundTint="#9E9C9C"
+            android:textColor="@android:color/black"
             android:text="Button" />
     </LinearLayout>
 
@@ -143,6 +147,8 @@
         android:background="@drawable/rounded_corner_button"
         android:textColor="@android:color/white"
         android:textStyle="bold"
+        android:enabled="false"
+        android:alpha="0.7"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
