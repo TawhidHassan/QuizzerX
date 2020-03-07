@@ -26,7 +26,7 @@ public class SetsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setTitle(getIntent().getStringExtra("setTitle"));
 
-        GridAdapter adapter=new GridAdapter(16);
+        GridAdapter adapter=new GridAdapter(getIntent().getIntExtra("sets",1),getIntent().getStringExtra("setTitle"));
         gridView.setAdapter(adapter);
 
 

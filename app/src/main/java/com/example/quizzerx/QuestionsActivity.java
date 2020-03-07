@@ -1,5 +1,6 @@
 package com.example.quizzerx;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -14,8 +15,14 @@ import android.view.animation.DecelerateInterpolator;
 import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +38,13 @@ public class QuestionsActivity extends AppCompatActivity {
     private int potion = 0;
     int score = 0;
 
+    private String category;
+    private int setNo;
+
+    // Write a message to the database
+    FirebaseDatabase database = FirebaseDatabase.getInstance();
+    DatabaseReference myRef = database.getReference();
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -45,42 +59,60 @@ public class QuestionsActivity extends AppCompatActivity {
         shareButn = findViewById(R.id.sharebuttonId);
         nextButton = findViewById(R.id.nextButtonId);
 
+        category = getIntent().getStringExtra("category");
+        setNo = getIntent().getIntExtra("setNo", 1);
+
         list = new ArrayList<>();
-        list.add(new QuestionModel("qus 1", "a", "b", "c", "d", "a"));
-        list.add(new QuestionModel("qus 2", "a", "b", "c", "d", "b"));
-        list.add(new QuestionModel("qus 3", "a", "b", "c", "d", "d"));
-        list.add(new QuestionModel("qus 4", "a", "b", "c", "d", "c"));
-        list.add(new QuestionModel("qus 5", "a", "b", "c", "d", "a"));
 
-        for (int i = 0; i < 4; i++) {
-            optionContainer.getChildAt(i).setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-                @Override
-                public void onClick(View v) {
-                    checkAnswer((Button) v);
-                }
-            });
-        }
-
-
-        playAnim(qustion, 0, list.get(potion).getQuestion());
-        nextButton.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+        myRef.child("SETES").child(category).child("questions").orderByChild("setNo").equalTo(setNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
-            public void onClick(View v) {
-                nextButton.setEnabled(false);
-                nextButton.setAlpha(0.7f);
-                enableOption(true);
-                potion++;
-                if (potion == list.size()) {
-                    //score Activity
-
-                    return;
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for (DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()) {
+                    list.add(dataSnapshot1.getValue(QuestionModel.class));
                 }
-                count = 0;
-                playAnim(qustion, 0, list.get(potion).getQuestion());
+                if (list.size() > 0) {
+                    //click answer
+                    for (int i = 0; i < 4; i++) {
+                        optionContainer.getChildAt(i).setOnClickListener(new View.OnClickListener() {
+                            @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                            @Override
+                            public void onClick(View v) {
+                                checkAnswer((Button) v);
+                            }
+                        });
+                    }
+                    //set first qus
+                    playAnim(qustion, 0, list.get(potion).getQuestion());
+                    nextButton.setOnClickListener(new View.OnClickListener() {
+                        @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+                        @Override
+                        public void onClick(View v) {
+                            nextButton.setEnabled(false);
+                            nextButton.setAlpha(0.7f);
+                            enableOption(true);
+                            potion++;
+                            if (potion == list.size()) {
+                                //score Activity
+                                return;
+                            }
+                            count = 0;
+                            playAnim(qustion, 0, list.get(potion).getQuestion());
+                        }
+                    });
+
+
+                }else
+                {
+                    Toast.makeText(getApplicationContext(),"No Question is available",Toast.LENGTH_LONG).show();
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+                Toast.makeText(getApplicationContext(),databaseError.getMessage(),Toast.LENGTH_LONG).show();
             }
         });
+
 
     }
 
@@ -112,7 +144,7 @@ public class QuestionsActivity extends AppCompatActivity {
                         if (value == 0) {
                             try {
                                 ((TextView) view).setText(data);
-                                noIdecator.setText(potion+1+"/"+list.size());
+                                noIdecator.setText(potion + 1 + "/" + list.size());
                             } catch (ClassCastException ex) {
                                 ((Button) view).setText(data);
                             }

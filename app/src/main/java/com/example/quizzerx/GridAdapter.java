@@ -11,9 +11,11 @@ import android.widget.TextView;
 public class GridAdapter extends BaseAdapter {
 
     private int setes=0;
+    private String category;
 
-    public GridAdapter(int setes) {
+    public GridAdapter(int setes,String category) {
         this.setes = setes;
+        this.category=category;
     }
 
     @Override
@@ -32,7 +34,7 @@ public class GridAdapter extends BaseAdapter {
     }
 
     @Override
-    public View getView(int position, View convertView, final ViewGroup parent) {
+    public View getView(final int position, View convertView, final ViewGroup parent) {
 
         View view;
         if (convertView==null)
@@ -46,6 +48,9 @@ public class GridAdapter extends BaseAdapter {
             @Override
             public void onClick(View v) {
                 Intent qusIntent=new Intent(parent.getContext(),QuestionsActivity.class);
+                qusIntent.putExtra("category",category);
+                qusIntent.putExtra("setNo",position+1);
+
                 parent.getContext().startActivity(qusIntent);
             }
         });
