@@ -176,6 +176,23 @@ public class QuestionsActivity extends AppCompatActivity {
                 //check this questrion are add on book mark or not
             }
         });
+        //share button
+        shareButn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String body=list.get(potion).getQuestion()+"\n1)"+list.get(potion).getOptionA()+"\n2)"
+                        +list.get(potion).getOptionB()+"\n3)"
+                        +list.get(potion).getOptionC()+"\n4)"
+                        +list.get(potion).getOptionD();
+
+                Intent shareIntent=new Intent(Intent.ACTION_SEND);
+                shareIntent.setType("plain/text");
+                shareIntent.putExtra(Intent.EXTRA_SUBJECT,"Quizzer Challange");
+                shareIntent.putExtra(Intent.EXTRA_TEXT,body);
+                startActivity(Intent.createChooser(shareIntent,"share via"));
+            }
+        });
+
 
     }
 
