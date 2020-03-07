@@ -7,7 +7,9 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.animation.Animator;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -25,7 +27,10 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,6 +54,18 @@ public class QuestionsActivity extends AppCompatActivity {
 
     Dialog loadingDialog;
 
+    //for sahre prefarence and gson for ofline all question
+    SharedPreferences preferences;
+    SharedPreferences.Editor editor;
+    Gson gson;
+    List<QuestionModel>bookmarlist;
+
+    public static final String FILE_NAME="QUIZZER";
+    public static final String KEY_NAME="QUESTION";
+
+    int matchedQuestionPotion;
+
+
     @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,6 +86,14 @@ public class QuestionsActivity extends AppCompatActivity {
         loadingDialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.rounded_corner_button));
         loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         loadingDialog.setCancelable(false);
+
+        //add questiuon in offline into device
+        preferences=getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
+        editor=preferences.edit();
+        gson=new Gson();
+
+//        get the offline bookmakarks
+        getBookmarks();
 
         category = getIntent().getStringExtra("category");
         setNo = getIntent().getIntExtra("setNo", 1);
@@ -134,12 +159,38 @@ public class QuestionsActivity extends AppCompatActivity {
             }
         });
 
+        bookmarkButn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                //check this questrion are add on book mark or not
+                if (modelMatch())
+                {
+                    bookmarlist.remove(matchedQuestionPotion);
+                    bookmarkButn.setImageDrawable(getDrawable(R.drawable.bookmark));
+                }else
+                {
+                    bookmarlist.add(list.get(potion));
+                    bookmarkButn.setImageDrawable(getDrawable(R.drawable.bookmarkselected));
+                }
+                //check this questrion are add on book mark or not
+            }
+        });
 
     }
+
+    //store bookmark on offline device
+    @Override
+    protected void onPause() {
+        super.onPause();
+        storeBookmarks();
+    }
+
 
     private void playAnim(final View view, final int value, final String data) {
         view.animate().alpha(value).scaleX(value).scaleY(value).setDuration(500).setStartDelay(100).setInterpolator(new DecelerateInterpolator())
                 .setListener(new Animator.AnimatorListener() {
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onAnimationStart(Animator animation) {
 
@@ -159,6 +210,7 @@ public class QuestionsActivity extends AppCompatActivity {
                         }
                     }
 
+                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onAnimationEnd(Animator animation) {
                         //data change
@@ -166,6 +218,17 @@ public class QuestionsActivity extends AppCompatActivity {
                             try {
                                 ((TextView) view).setText(data);
                                 noIdecator.setText(potion + 1 + "/" + list.size());
+
+                                //check this questrion are add on book mark or not
+                                if (modelMatch())
+                                {
+                                    bookmarkButn.setImageDrawable(getDrawable(R.drawable.bookmarkselected));
+                                }else
+                                {
+                                    bookmarkButn.setImageDrawable(getDrawable(R.drawable.bookmark));
+                                }
+                                //check this questrion are add on book mark or not
+
                             } catch (ClassCastException ex) {
                                 ((Button) view).setText(data);
                             }
@@ -214,5 +277,47 @@ public class QuestionsActivity extends AppCompatActivity {
 
             }
         }
+    }
+
+    //for get question into offline device
+    private void getBookmarks()
+    {
+        String json= preferences.getString(KEY_NAME,"");
+        Type type=new TypeToken<List<QuestionModel>>(){}.getType();
+
+        bookmarlist=gson.fromJson(json,type);
+
+        if (bookmarlist==null)
+        {
+            bookmarlist=new ArrayList<>();
+        }
+    }
+
+    //check which questuion we bookmarks
+    private boolean modelMatch()
+    {
+        boolean matched=false;
+        int i=0;
+        for (QuestionModel model:bookmarlist)
+        {
+
+            if (model.getQuestion().equals(list.get(potion).getQuestion())
+                    &&model.getCorrectAns().equals(list.get(potion).getCorrectAns())
+                    &&model.getSetNo()==list.get(potion).getSetNo())
+            {
+                matched=true;
+                matchedQuestionPotion=i;
+            }
+            i++;
+        }
+        return matched;
+    }
+
+    //for store question into offline device
+    private void storeBookmarks()
+    {
+        String json=gson.toJson(bookmarlist);
+        editor.putString(KEY_NAME,json);
+        editor.commit();
     }
 }
