@@ -21,8 +21,10 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdListener;
 import com.google.android.gms.ads.AdRequest;
 import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.InterstitialAd;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -52,6 +54,7 @@ public class QuestionsActivity extends AppCompatActivity {
 
     Dialog loadingDialog;
 
+    private InterstitialAd mInterstitialAd;
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
@@ -133,6 +136,11 @@ public class QuestionsActivity extends AppCompatActivity {
                             enableOption(true);
                             potion++;
                             if (potion == list.size()) {
+                                if (mInterstitialAd.isLoaded())
+                                {
+                                    mInterstitialAd.show();
+                                    return;
+                                }
                                 Intent scoreIntent=new Intent(getApplicationContext(),ScoreActivity.class);
                                 scoreIntent.putExtra("score",score);
                                 scoreIntent.putExtra("total",list.size());
@@ -345,5 +353,24 @@ public class QuestionsActivity extends AppCompatActivity {
         AdView mAdView = findViewById(R.id.adView);
         AdRequest adRequest = new AdRequest.Builder().build();
         mAdView.loadAd(adRequest);
+
+        //        Interstitial Ads
+        mInterstitialAd = new InterstitialAd(getApplicationContext());
+        mInterstitialAd.setAdUnitId(getResources().getString(R.string.interstitialAdsId));
+        mInterstitialAd.loadAd(new AdRequest.Builder().build());
+        mInterstitialAd.setAdListener(new AdListener(){
+            @Override
+            public void onAdClosed() {
+                super.onAdClosed();
+                mInterstitialAd.loadAd(new AdRequest.Builder().build());
+
+                Intent scoreIntent=new Intent(getApplicationContext(),ScoreActivity.class);
+                scoreIntent.putExtra("score",score);
+                scoreIntent.putExtra("total",list.size());
+                startActivity(scoreIntent);
+                finish();
+                return;
+            }
+        });
     }
 }
