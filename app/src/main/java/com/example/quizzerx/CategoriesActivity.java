@@ -1,20 +1,22 @@
 package com.example.quizzerx;
 
-
-import android.app.Dialog;
-import android.os.Build;
-import android.os.Bundle;
-import android.view.MenuItem;
-import android.widget.LinearLayout;
-import android.widget.Toast;
-import android.widget.Toolbar;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Dialog;
+import android.os.Build;
+import android.os.Bundle;
+import android.text.Layout;
+import android.view.MenuItem;
+import android.widget.LinearLayout;
+import android.widget.Toast;
+import android.widget.Toolbar;
+
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -29,7 +31,6 @@ public class CategoriesActivity extends AppCompatActivity {
     private androidx.appcompat.widget.Toolbar toolbarx;
     RecyclerView recyclerView;
 
-
     List<CategoryModel>categoryModelList;
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -42,7 +43,10 @@ public class CategoriesActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_categories);
-        recyclerView = findViewById(R.id.categoryRecyclerViewId);
+
+        loadAds();
+
+        recyclerView=findViewById(R.id.categoryRecyclerViewId);
         toolbarx = findViewById(R.id.toolbarId);
         setSupportActionBar(toolbarx);
         getSupportActionBar().setTitle("Category");
@@ -54,7 +58,8 @@ public class CategoriesActivity extends AppCompatActivity {
         loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
         loadingDialog.setCancelable(false);
 
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+
+        LinearLayoutManager layoutManager=new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(layoutManager);
 
@@ -87,6 +92,20 @@ public class CategoriesActivity extends AppCompatActivity {
             }
         });
 
+    }
 
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        if (item.getItemId() == android.R.id.home) {
+            finish();
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void loadAds() {
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 }

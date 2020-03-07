@@ -39,6 +39,8 @@ dependencies {
 
     //    realtime databade
     implementation 'com.google.firebase:firebase-database:19.2.1'
+    //    for addMobe
+    implementation 'com.google.android.gms:play-services-ads:18.3.0'
 
 }
 apply plugin: 'com.android.application'

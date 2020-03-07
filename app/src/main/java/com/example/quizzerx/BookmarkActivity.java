@@ -12,6 +12,9 @@ import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
+import com.google.android.gms.ads.MobileAds;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -23,7 +26,7 @@ public class BookmarkActivity extends AppCompatActivity {
 
     Toolbar toolbar;
     RecyclerView recyclerView;
-
+    private AdView mAdView;
 
     //for sahre prefarence and gson for ofline all question
     SharedPreferences preferences;
@@ -39,11 +42,14 @@ public class BookmarkActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_bookmark);
+
+        //        initial AdMob
+        loadAds();
+
         toolbar=findViewById(R.id.bToolbarId);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("Bookmarks");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-
 
         //add questiuon in offline into device
         preferences=getSharedPreferences(FILE_NAME, Context.MODE_PRIVATE);
@@ -53,11 +59,11 @@ public class BookmarkActivity extends AppCompatActivity {
         //        get the offline bookmakarks
         getBookmarks();
 
-
         recyclerView=findViewById(R.id.rv_bookmarksId);
         LinearLayoutManager linearLayoutManager=new LinearLayoutManager(this);
         linearLayoutManager.setOrientation(RecyclerView.VERTICAL);
         recyclerView.setLayoutManager(linearLayoutManager);
+
 
         BookmarkAdapter adapter=new BookmarkAdapter(bookmarlist);
         recyclerView.setAdapter(adapter);
@@ -65,7 +71,6 @@ public class BookmarkActivity extends AppCompatActivity {
 
 
     }
-
     //store bookmark on offline device
     @Override
     protected void onPause() {
@@ -105,6 +110,10 @@ public class BookmarkActivity extends AppCompatActivity {
         editor.putString(KEY_NAME,json);
         editor.commit();
     }
+
+    private void loadAds() {
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
+    }
 }
-
-

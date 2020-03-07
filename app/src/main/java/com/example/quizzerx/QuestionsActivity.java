@@ -21,6 +21,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.ads.AdRequest;
+import com.google.android.gms.ads.AdView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -48,11 +50,11 @@ public class QuestionsActivity extends AppCompatActivity {
     private String category;
     private int setNo;
 
+    Dialog loadingDialog;
+
     // Write a message to the database
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
-
-    Dialog loadingDialog;
 
     //for sahre prefarence and gson for ofline all question
     SharedPreferences preferences;
@@ -72,6 +74,8 @@ public class QuestionsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_questions);
 
+        loadAds();
+
         Toolbar toolbar = findViewById(R.id.qusToolbar);
 
         qustion = findViewById(R.id.questionId);
@@ -80,6 +84,7 @@ public class QuestionsActivity extends AppCompatActivity {
         optionContainer = findViewById(R.id.optionContenierId);
         shareButn = findViewById(R.id.sharebuttonId);
         nextButton = findViewById(R.id.nextButtonId);
+
 
         loadingDialog=new Dialog(this);
         loadingDialog.setContentView(R.layout.loading);
@@ -99,7 +104,6 @@ public class QuestionsActivity extends AppCompatActivity {
         setNo = getIntent().getIntExtra("setNo", 1);
 
         list = new ArrayList<>();
-
         loadingDialog.show();
         myRef.child("SETES").child(category).child("questions").orderByChild("setNo").equalTo(setNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -129,12 +133,12 @@ public class QuestionsActivity extends AppCompatActivity {
                             enableOption(true);
                             potion++;
                             if (potion == list.size()) {
-                                //score Activity
                                 Intent scoreIntent=new Intent(getApplicationContext(),ScoreActivity.class);
                                 scoreIntent.putExtra("score",score);
                                 scoreIntent.putExtra("total",list.size());
                                 startActivity(scoreIntent);
                                 finish();
+
                                 return;
                             }
                             count = 0;
@@ -176,6 +180,7 @@ public class QuestionsActivity extends AppCompatActivity {
                 //check this questrion are add on book mark or not
             }
         });
+
         //share button
         shareButn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -186,15 +191,15 @@ public class QuestionsActivity extends AppCompatActivity {
                         +list.get(potion).getOptionD();
 
                 Intent shareIntent=new Intent(Intent.ACTION_SEND);
-                shareIntent.setType("plain/text");
+                shareIntent.setType("text/plain");
                 shareIntent.putExtra(Intent.EXTRA_SUBJECT,"Quizzer Challange");
                 shareIntent.putExtra(Intent.EXTRA_TEXT,body);
                 startActivity(Intent.createChooser(shareIntent,"share via"));
             }
         });
 
-
     }
+
 
     //store bookmark on offline device
     @Override
@@ -203,11 +208,9 @@ public class QuestionsActivity extends AppCompatActivity {
         storeBookmarks();
     }
 
-
     private void playAnim(final View view, final int value, final String data) {
         view.animate().alpha(value).scaleX(value).scaleY(value).setDuration(500).setStartDelay(100).setInterpolator(new DecelerateInterpolator())
                 .setListener(new Animator.AnimatorListener() {
-                    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
                     @Override
                     public void onAnimationStart(Animator animation) {
 
@@ -236,6 +239,7 @@ public class QuestionsActivity extends AppCompatActivity {
                                 ((TextView) view).setText(data);
                                 noIdecator.setText(potion + 1 + "/" + list.size());
 
+
                                 //check this questrion are add on book mark or not
                                 if (modelMatch())
                                 {
@@ -245,7 +249,6 @@ public class QuestionsActivity extends AppCompatActivity {
                                     bookmarkButn.setImageDrawable(getDrawable(R.drawable.bookmark));
                                 }
                                 //check this questrion are add on book mark or not
-
                             } catch (ClassCastException ex) {
                                 ((Button) view).setText(data);
                             }
@@ -336,5 +339,11 @@ public class QuestionsActivity extends AppCompatActivity {
         String json=gson.toJson(bookmarlist);
         editor.putString(KEY_NAME,json);
         editor.commit();
+    }
+
+    private void loadAds() {
+        AdView mAdView = findViewById(R.id.adView);
+        AdRequest adRequest = new AdRequest.Builder().build();
+        mAdView.loadAd(adRequest);
     }
 }
