@@ -1,6 +1,8 @@
 package com.example.quizzerx;
 
 
+import android.app.Dialog;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
@@ -8,6 +10,7 @@ import android.widget.Toast;
 import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -32,6 +35,9 @@ public class CategoriesActivity extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
 
+    Dialog loadingDialog;
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -42,6 +48,11 @@ public class CategoriesActivity extends AppCompatActivity {
         getSupportActionBar().setTitle("Category");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        loadingDialog=new Dialog(this);
+        loadingDialog.setContentView(R.layout.loading);
+        loadingDialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.rounded_corner_button));
+        loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        loadingDialog.setCancelable(false);
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         layoutManager.setOrientation(RecyclerView.VERTICAL);
@@ -52,6 +63,7 @@ public class CategoriesActivity extends AppCompatActivity {
         final CategoryAdapter adapter=new CategoryAdapter(categoryModelList);
         recyclerView.setAdapter(adapter);
 
+        loadingDialog.show();
         myRef.child("categories").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -64,11 +76,14 @@ public class CategoriesActivity extends AppCompatActivity {
 
                 }
                 adapter.notifyDataSetChanged();
+                loadingDialog.dismiss();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(CategoriesActivity.this,databaseError.getMessage(),Toast.LENGTH_LONG).show();
+                loadingDialog.dismiss();
+                finish();
             }
         });
 

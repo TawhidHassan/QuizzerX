@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.animation.Animator;
+import android.app.Dialog;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.Build;
@@ -45,6 +47,9 @@ public class QuestionsActivity extends AppCompatActivity {
     FirebaseDatabase database = FirebaseDatabase.getInstance();
     DatabaseReference myRef = database.getReference();
 
+    Dialog loadingDialog;
+
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -59,11 +64,18 @@ public class QuestionsActivity extends AppCompatActivity {
         shareButn = findViewById(R.id.sharebuttonId);
         nextButton = findViewById(R.id.nextButtonId);
 
+        loadingDialog=new Dialog(this);
+        loadingDialog.setContentView(R.layout.loading);
+        loadingDialog.getWindow().setBackgroundDrawable(getDrawable(R.drawable.rounded_corner_button));
+        loadingDialog.getWindow().setLayout(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        loadingDialog.setCancelable(false);
+
         category = getIntent().getStringExtra("category");
         setNo = getIntent().getIntExtra("setNo", 1);
 
         list = new ArrayList<>();
 
+        loadingDialog.show();
         myRef.child("SETES").child(category).child("questions").orderByChild("setNo").equalTo(setNo).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -93,6 +105,11 @@ public class QuestionsActivity extends AppCompatActivity {
                             potion++;
                             if (potion == list.size()) {
                                 //score Activity
+                                Intent scoreIntent=new Intent(getApplicationContext(),ScoreActivity.class);
+                                scoreIntent.putExtra("score",score);
+                                scoreIntent.putExtra("total",list.size());
+                                startActivity(scoreIntent);
+                                finish();
                                 return;
                             }
                             count = 0;
@@ -103,13 +120,17 @@ public class QuestionsActivity extends AppCompatActivity {
 
                 }else
                 {
+                    finish();
                     Toast.makeText(getApplicationContext(),"No Question is available",Toast.LENGTH_LONG).show();
                 }
+                loadingDialog.dismiss();
             }
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
                 Toast.makeText(getApplicationContext(),databaseError.getMessage(),Toast.LENGTH_LONG).show();
+                loadingDialog.dismiss();
+                finish();
             }
         });
 
